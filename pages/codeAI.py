@@ -24,11 +24,15 @@ with st.sidebar:
 # region 模型选择
 modelSelect = st.radio("选用哪个模型?", ("code-davinci-002", "code-cushman-001"))
 string = ""
+isInsert=st.empty()
 if modelSelect == "code-davinci-002":
     """最强大的模型，可以翻译人说的话到代码，也支持插入编写"""
+    isInsert=st.checkbox("insert instead completion", value=False)
 if modelSelect == "code-cushman-001":
     """比Davinci更快更轻量"""
 string = st.text_area("用户输入")
+if isInsert:
+    suffixInput=st.text_area("后缀")
 # endregion
 # region 参数设置
 isOneLine = st.checkbox("只输出一行", value=False)
@@ -51,15 +55,28 @@ if isOneString:
     stopToken.append('"')
 # endregion
 if st.button("提交"):
-    res = openai.Completion.create(
-        model=modelSelect,
-        prompt=string,
-        temperature=0,
-        max_tokens=maxToken,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0,
-        stop=stopToken
-    )
+    if isInsert:
+        res = openai.Completion.create(
+            model=modelSelect,
+            prompt=string,
+            temperature=0,
+            max_tokens=maxToken,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            stop=stopToken,
+            suffix=suffixInput,
+        )
+    else:
+        res = openai.Completion.create(
+            model=modelSelect,
+            prompt=string,
+            temperature=0,
+            max_tokens=maxToken,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            stop=stopToken
+        )
     st.balloons()
     st.code(res["choices"][0]["text"])
